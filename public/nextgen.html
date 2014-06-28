@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="electron">
 <!--
 
 
@@ -160,14 +160,14 @@ using font awesome
     </style>
 
   </head>
-  <body>
+  <body ng-controller="MainController">
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="jquery.js"></script>
 <script src="mustache.js"></script>
 <script src='./ace-builds-master/src-noconflict/ace.js' type='text/javascript' charset='utf-8'></script>
 <script src="./ace-builds-master/src-noconflict/ext-language_tools.js"></script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
-<script src="bootstrap/js/bootstrap.min.js"></script>
+<!-- <script src="bootstrap/js/bootstrap.min.js"></script> -->
 <script src='treeview/src/js/bootstrap-treeview.js'></script>
 
 
@@ -181,13 +181,13 @@ using font awesome
 
         <form class="navbar-form navbar-right">
             <div class="input-group" style="width:200px">
-                <input type="text" class="form-control" placeholder="Board">
+                <input type="text" class="form-control" placeholder="Board" ng-model="boardFilter">
                 <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Uno <span class="caret"></span></button>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{{boards.length ? activeBoard.name || 'Select One' : 'Loading...'}} <span class="caret"></span></button>
                     <ul class="dropdown-menu pull-right">
-                      <li><a href="#">Uno</a></li>
-                      <li><a href="#">Leonardo</a></li>
-                      <li><a href="#">Xadow</a></li>
+                      <li ng-repeat="board in boards | filter:boardFilter">
+                        <a href="#" ng-click="setActiveBoard(board)">{{board.name}}</a>
+                      </li>
                       <li class="divider"></li>
                       <li><a href="#">Other...</a></li>
                     </ul>
@@ -199,12 +199,12 @@ using font awesome
         <form class="navbar-form navbar-right" role="search">
             <div class="btn-group" id='port-selector'>
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                 port: <b class='data'>cumodem1234</b> <span class="caret"></span>
+                 port: <b class='data'>{{ports.length ? activePort.comName || 'Select One' : 'Loading...'}}</b> <span class="caret"></span>
               </button>
               <ul class="dropdown-menu" role="menu">
-                <li><a href="#">cumodem468</a></li>
-                <li><a href="#">COM1</a></li>
-                <li><a href="#">COM2</a></li>
+                <li ng-repeat="port in ports">
+                  <a href="#" ng-click="setActivePort(port);">{{port.comName}}</a>
+                </li>
               </ul>
             </div>
         </form>
@@ -453,12 +453,15 @@ Temp: 45C
     </div>
 
     <div id='board-info' class='tabpane'>
-        <h4>Arduino Uno</h4>
+        <h4>{{activeBoard.name}}</h4>
         <dl class='dl-horizontal'>
-            <dt>CPU</dt> <dd>ATMega328p</dd>
-            <dt>Operating Voltage</dt><dd>5V</dd>
-            <dt>Flash Memory</dt><dd>32 KB</dd>
-            <dt>SRAM</dt> <dd>2 KB</dd>
+            <dt>CPU</dt><dd>{{activeBoard.build.mcu}}</dd>
+            <dt>Operating Voltage</dt><dd>{{activeBoard.info.power.operating}}V</dd>
+            <dt>Flash Memory</dt><dd>{{activeBoard.info.memory.flash}} KB</dd>
+            <dt>SRAM</dt> <dd>{{activeBoard.info.memory.sram}} KB</dd>
+
+            <dt ng-repeat-start="(prop, val) in activeBoard.info">{{prop}}</dt>
+            <dd ng-repeat-end>{{val}}</dd>
         </dl>
         <h4>PINS</h4>
         <dl class='dl-horizontal'>
@@ -466,6 +469,7 @@ Temp: 45C
             <dt>A0</dt><dd>Analog 0, D14</dd>
             <dt>A1</dt><dd>Analog 1, D15</dd>
         </dl>
+        <pre>{{activeBoard|json:pretty}}</pre>
 
     </div>
 </div>
@@ -527,6 +531,10 @@ Temp: 45C
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
+<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="bower_components/angular/angular.min.js"></script>
+<script src="scripts/electron.js"></script>
 
 <script type='text/javascript'>
     $(document).ready(function() {

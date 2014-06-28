@@ -322,8 +322,42 @@ var server = app.listen(54329,function() {
 var wss = websocket.createServer(function(conn) {
     console.log('web socket connected');
     wslist.push(conn);
-    conn.on('message',function(message) {
-        console.log("got a request");
+    conn.on('text',function(str) {
+        console.log("got a request", str);
+        var parsedData;
+        try{
+            parsedData = JSON.parse(str);
+        }catch(e){}
+
+        console.dir(parsedData);
+
+        if(parsedData){
+            // command/request name
+            switch(parsedData.name){
+                case 'boards':
+                    conn.sendText(JSON.stringify({name:'boards', data:BOARDS}));
+                    break;
+                case 'ports':
+                    sp.list(function(err,list) {
+                        // format the data (workaround serialport issue on Win (&*nix?))
+                        list.forEach(function(port) {
+                            if(port.pnpId){
+                                var data = /^USB\\VID_([a-fA-F0-9]{4})\&PID_([a-fA-F0-9]{4})/.exec(port.pnpId);
+                                if(data){
+                                    port.vendorId = port.vendorId || '0x'+data[1];
+                                    port.productId = port.productId || '0x'+data[2];
+                                }
+                            }
+                        });
+                        conn.sendText(JSON.stringify({name:'ports', data:list}));
+                    });
+
+                    break;
+                default:
+                    conn.sendText("huh??");
+                    break;
+            }
+        }
     });
     conn.on('error',function(err){
         console.log('websocket got an error',err);

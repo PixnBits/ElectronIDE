@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Electron Arduino IDE</title>
+
+    <!-- Bootstrap -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/edit.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+  <body>
+
+
+<!-- new sketch dialog -->
+
+<div id='new-sketch-dialog' class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">New Sketch</h4>
+      </div>
+      <div class="modal-body">
+          <form>
+              <div class='form-group'>
+                  <label>Sketch Name</label>
+                  <input type='text' class='form-control' value='NewSketch'>
+              </div>
+          </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id='create-sketch-button'>Create Sketch</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<!-- rename sketch dialog -->
+<div id='rename-sketch-dialog' class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Rename Sketch</h4>
+      </div>
+      <div class="modal-body">
+          <form>
+              <div class='form-group'>
+                  <label>Sketch Name</label>
+                  <input type='hidden' class='form-control old-name' value='NewSketch'>
+                  <input type='text' class='form-control new-name' value='NewSketch'>
+              </div>
+          </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id='rename-sketch-button'>Create Sketch</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<nav class="navbar navbar-default navbar-fixed-top " role="navigation">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <span class="navbar-brand">Electron</span>
+    </div>
+
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <form class="navbar-form navbar-left" role="search">
+            <div class='form-group'>
+                <input type='text' class='form-control' placeholder='search help' id='search-help'>
+                <button id='search-button' class='btn btn-success'>search</button>
+            </div>
+        </form>
+        <div class="list-group" id='search-results'>
+            <a href="#" class="list-group-item active">
+              <h4 class="list-group-item-heading">library name</h4>
+              <p class="list-group-item-text">some text about the library</p>
+            </a>
+            <a href="#" class="list-group-item active">
+              <h4 class="list-group-item-heading">List group item heading</h4>
+              <p class="list-group-item-text">...</p>
+            </a>
+            <a href="#" class="list-group-item active">
+              <h4 class="list-group-item-heading">List group item heading</h4>
+              <p class="list-group-item-text">...</p>
+            </a>
+            <a href="#" class="list-group-item active">
+              <h4 class="list-group-item-heading">List group item heading</h4>
+              <p class="list-group-item-text">...</p>
+            </a>
+        </div>
+
+        <form class="navbar-form navbar-right" role="search">
+
+
+            <div class="btn-group" id='port-selector'>
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                 port: <b class='data'>NONE</b> <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Acti</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li class="divider"></li>
+                <li><a href="#">edit...</a></li>
+              </ul>
+            </div>
+
+            <div class="btn-group" id='board-selector'>
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                board: <b class='data'>asdf</b> <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Acti</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li class="divider"></li>
+                <li><a href="#">edit...</a></li>
+              </ul>
+            </div>
+
+            <div class='btn-group'>
+                <button id='compile' type="button" class="btn btn-primary">compile</button>
+                <button id='run' type="button" class="btn btn-success">run</button>
+            </div>
+        </form>
+
+    </div>
+  </div>
+</nav>
+
+
+<div class='container-fluid' id='mainarea'>
+    <div class='row'>
+        <div class='col-md-2 fixed-pane left-pane'>
+            <h4 id='sketch-name'>foo</h4>
+            <div id='sketch-info'></div>
+            <h3>Sketches</h3>
+            <div id='sketch-picker'></div>
+            <div class='row'>
+                <div class='col-md-12' id='sketch-buttons'>
+                    <button class='btn btn-default' id='new-sketch-button'>new</button>
+                    <button class='btn btn-default' id='edit-sketches-button'>edit</button>
+                    <button class='btn btn-default' id='save-sketch-button'>save</button>
+                </div>
+
+            </div>
+        </div>
+        <div class='col-md-6 fixed-pane center-pane'>
+            <div id='ace-editor'>asdfas</div>
+        </div>
+        <div class='col-md-4 fixed-pane right-pane'>
+
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#console-pane" data-toggle="tab">Debug</a></li>
+                <li><a href="#serial-pane" data-toggle="tab">Serial</a></li>
+                <li><a href="#docs-pane" data-toggle="tab">Docs</a></li>
+                <li><a href="#board-info-pane" data-toggle="tab">Board Info</a></li>
+            </ul>
+
+            <div class='tab-content'>
+                <div id='console-pane' class='tab-pane active'>
+                    <div id='console'>this is the console</div>
+                    <div id='console-tools'>
+                        <button class='btn btn-default btn-xs' id='clear-debug-pane'>clear</button>
+                    </div>
+                </div>
+                <div id='docs-pane' class='tab-pane'>
+                    some docs go here
+                </div>
+                <div id='board-info-pane' class='tab-pane'>
+                    board info goes here
+                </div>
+                <div id='serial-pane' class='tab-pane'>
+                    <div class='row'>
+                        <div class='col-xs-12'>
+                            <button type='button' class='btn btn-default dropdown-toggle btn-xs' id='serial-selection-button'  data-toggle="dropdown">
+                                <span class='data'>9600</span> baud <span class="caret"></span>
+                            </button>
+                            <ul class='dropdown-menu' role='menu' id='serial-selection-menu'></ul>
+                            <button class='btn btn-default btn-xs' id='open-serial-button'>open</button>
+                            <button class='btn btn-default btn-xs' id='clear-serial-pane'>clear</button>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-xs-12'>
+                            <input type='text' class='input-control'></input>
+                            <button class='btn btn-default'>send</button>
+                        </div>
+                    </div>
+
+                    <pre id='serial'></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="jquery.js"></script>
+    <script src="mustache.js"></script>
+    <script src='./ace-builds-master/src-noconflict/ace.js' type='text/javascript' charset='utf-8'></script>
+    <script src="./ace-builds-master/src-noconflict/ext-language_tools.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+<script type='text/javascript'>
+var HOSTNAME = location.protocol + '//' + location.host;
+
+function POST(url,payload,cb) {
+    var data = new FormData();
+    if(payload instanceof FormData) {
+        data = payload;
+    } else {
+        for(var name in payload) {
+            data.append(name,payload[name]);
+        }
+    }
+    $.ajax({
+        url: HOSTNAME+url,
+        type: "POST",
+        data: data,
+        processData: false,  // tell jQuery not to process the data
+        contentType: false,   // tell jQuery not to set contentType
+        success: function(res) {
+            var resp = JSON.parse(res);
+            console.log("POST got back",resp);
+            if(cb) cb(resp);
+        }
+    });
+}
+
+$(document).ready(function() {
+
+var langTools = ace.require("ace/ext/language_tools");
+var editor = ace.edit('ace-editor');
+editor.setOptions({
+    enableBasicAutocompletion: true,
+});
+//editor.setTheme('ace/theme/xcode');
+editor.getSession().setMode('ace/mode/c_cpp');
+editor.getSession().setUseWrapMode(true);
+
+var BOARDS = [];
+var PORTS = [];
+
+var STATE = {
+    port:'',
+    board:'',
+    sketch:'',
+    rate:9600,
+}
+function setPort(port) {
+    STATE.port = port;
+    $("#port-selector .data").text(port);
+
+    // attempt to determine which board is connected at this port
+    // find port in PORTS
+    var fullPort = PORTS.filter(function(portData){
+        return port === portData.comName;
+    })[0];
+
+    if(fullPort){
+        var boardMatched = BOARDS.filter(function(board, ind){
+            if(board && board.build && board.build.pid){
+                return board.build.pid === fullPort.productId && board.build.vid === fullPort.vendorId;
+            }
+        })[0];
+
+        if(boardMatched){
+            setBoard(boardMatched.id);
+        }
+    }
+
+}
+function setBoard(board) {
+    STATE.board = board;
+    $("#board-selector .data").text(board);
+
+    var match = BOARDS.filter(function(board) {  return board.id == STATE.board;  });
+    var tmpl = $("#board-info-template").text();
+    $("#board-info-pane").empty().append(Mustache.render(tmpl,match[0]));
+}
+function setRate(rate) {
+    STATE.rate = rate;
+    $("#serial-selection-button .data").text(rate);
+}
+
+function setSketch(sketch) {
+    STATE.sketch = sketch;
+    $("#sketch-name").text(sketch.name);
+    editor.setValue(sketch.files[0].content);
+}
+
+function loadSketch(name) {
+    $.get(HOSTNAME+'/sketch/'+name,function(res) {
+        console.log("the result is ",res);
+        setSketch(res);
+        var infotemplate = $("#sketch-info-template").text();
+        $("#sketch-info").empty().append(Mustache.render(infotemplate,res.info));
+        $("#sketch-info .libraries a").click(function(e) {
+            e.preventDefault();
+            var libname =  $(this).attr('data-id');
+            console.log('clicked on lib', libname);
+            $('.nav-tabs a[href="#docs-pane"]').tab('show');
+            $.get(HOSTNAME+'/docs/library/'+libname,function(res2) {
+                var libdoctemplate = $("#library-doc-template").text();
+                console.log('got back docs',res2);
+                $("#docs-pane").empty().append(Mustache.render(libdoctemplate,res2));
+            })
+        })
+
+    })
+}
+
+function fetchSerialports(cb) {
+    $.get(HOSTNAME+"/ports",function(res) {
+        PORTS = JSON.parse(res);
+        cb(PORTS);
+    })
+}
+function populateSerialports(ports) {
+    var template = $("#port-selector-template").text();
+    $("#port-selector .dropdown-menu")
+        .empty()
+        .append(Mustache.render(template,ports));
+    $("#port-selector .dropdown-menu a").click(function(e) {
+        e.preventDefault();
+        setPort($(this).attr('data-name'));
+    })
+}
+fetchSerialports(populateSerialports);
+
+
+function fetchBoards(cb) {
+    $.get(HOSTNAME+"/boards",function(res) {
+        cb(JSON.parse(res));
+    })
+}
+
+function populateBoards(boards) {
+    BOARDS = boards;
+    var template = $("#board-selector-template").text();
+    $("#board-selector .dropdown-menu")
+        .empty()
+        .append(Mustache.render(template,boards));
+    $("#board-selector .dropdown-menu a").click(function(e) {
+        e.preventDefault();
+        setBoard($(this).attr('data-id'));
+    })
+}
+
+fetchBoards(populateBoards);
+
+function compileCode() {
+    appendConsole("compiling", STATE.sketch.name);
+    POST('/compile',{
+        code: editor.getValue(),
+        board: STATE.board,
+        sketch: STATE.sketch.name,
+    }, function(resp) {
+        appendConsoleResponse(resp.status);
+        if(resp.status == 'error') {
+            appendConsoleResponse(resp.output);
+        }
+    });
+}
+
+function compileAndRunCode() {
+    appendConsole('compiling and running');
+    var data = new FormData();
+    data.append('code',editor.getValue());
+    data.append('board',STATE.board);
+    data.append('port',STATE.port);
+    data.append('sketch',STATE.sketch.name);
+    $.ajax({
+        url: HOSTNAME+'/run',
+        type: "POST",
+        data: data,
+        processData: false,  // tell jQuery not to process the data
+        contentType: false,   // tell jQuery not to set contentType
+        success: function(res) {
+            appendConsoleResponse(JSON.parse(res).status);
+        },
+    });
+}
+
+function toggleSerialConsole() {
+    if(STATE.serial == 'open') {
+        STATE.serial = 'closed';
+        $("#open-serial-button").text('open');
+        $("#serial").text($("#serial").text()+"closed\n");
+        POST('/serial/close',{
+            port:STATE.port,
+        }, function(resp) {
+            console.log("response is",resp);
+            if(resp.status == 'error') {
+                $("#serial").text($("#serial").text()+"error: " + resp.message + "\n");
+            }
+        });
+    } else {
+        STATE.serial = 'open';
+        $("#open-serial-button").text('close');
+        $("#serial").text($("#serial").text()+"opened at " + STATE.rate + " baud\n");
+        POST('/serial/open',{
+            port:STATE.port,
+            rate:STATE.rate,
+        }, function(resp) {
+            console.log("response is",resp);
+            if(resp.status == 'error') {
+                $("#serial").text($("#serial").text()+"error: " + resp.message + "\n");
+            }
+        });
+    }
+}
+
+
+function appendConsole(str) {
+    $("#console").append('<p>'+str+'</p>');
+    var objDiv = document.getElementById("console");
+    objDiv.scrollTop = objDiv.scrollHeight;
+}
+function appendConsoleResponse(str) {
+    $("#console").append('<p class="response">'+str+'</p>');
+    var objDiv = document.getElementById("console");
+    objDiv.scrollTop = objDiv.scrollHeight;
+}
+$("#compile").click(function(e) {
+    e.preventDefault();
+    compileCode();
+});
+$("#run").click(function(e) {
+    e.preventDefault();
+    compileAndRunCode();
+});
+
+
+function fetchSketches(cb) {
+    $.get(HOSTNAME+"/sketches",function(res) {
+        cb(JSON.parse(res));
+    });
+}
+
+function populateSketches(sketches) {
+    var template = $("#sketch-template").text();
+    $("#sketch-picker")
+        .empty()
+        .append(Mustache.render(template,sketches));
+    $("#sketch-picker a").click(function(e) {
+        console.log('switching');
+        e.preventDefault();
+        loadSketch($(this).attr('data-name'));
+    });
+    $("#sketch-picker .edit-button").click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var name = $(this).attr('data-name');
+        console.log('renaming',name);
+
+        $("#rename-sketch-dialog .old-name").val(name);
+        $("#rename-sketch-dialog .new-name").val(name);
+
+        $("#rename-sketch-dialog").modal('show');
+    });
+    $("#sketch-picker .delete-button").click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var name = $(this).attr('data-name');
+        console.log('deleting',name);
+        POST('/sketches/delete',{name:name},function(res){
+            console.log("repsonse from delete is",res);
+            appendConsole('deleted sketch '+name);
+            if(res.status == 'error') {
+                appendConsoleResponse(res.output);
+            } else {
+                fetchSketches(populateSketches);
+            }
+        });
+    });
+}
+
+fetchSketches(populateSketches);
+
+
+$("#search-button").click(function(e){
+    e.preventDefault();
+    console.log("searching",$("#search-help").val());
+    $.get(HOSTNAME+'/search?query='+$("#search-help").val(),function(res) {
+        console.log("got back",res);
+        $("#search-results").css('display','block').empty().append(
+            Mustache.render($("#library-template").text(),res)
+        );
+        $("#search-results a").click(function(e) {
+            e.preventDefault();
+            var libid = $(this).attr('data-id');
+            var libname = $(this).attr('data-name');
+            $("#search-results").css('display','none');
+            console.log("adding library",libid);
+            editor.gotoLine(0);
+            editor.insert("#include <"+libname+".h>\n");
+        });
+    });
+})
+
+
+$("#new-sketch-button").click(function(e){
+    e.preventDefault();
+    var name = "Sketch"+Math.floor(Math.random()*10000);
+    $("#new-sketch-dialog input").val(name);
+    $("#new-sketch-dialog").modal('show');
+});
+
+$("#create-sketch-button").click(function(e) {
+    e.preventDefault();
+    $("#new-sketch-dialog").modal('hide');
+    var name = $("#new-sketch-dialog input").val();
+    console.log('name = ',name);
+    POST("/new",{name:name},function(res){
+        console.log("new sketch = ",res);
+        appendConsole('created new sketch '+name);
+        if(res.status == 'error') {
+            appendConsoleResponse(res.output);
+        } else {
+            fetchSketches(populateSketches);
+        }
+    });
+
+});
+
+$("#rename-sketch-button").click(function(e) {
+    e.preventDefault();
+    $("#rename-sketch-dialog").modal('hide');
+    var oldname = $("#rename-sketch-dialog .old-name").val();
+    var newname = $("#rename-sketch-dialog .new-name").val();
+    console.log('renaming name = ',oldname, 'to',newname);
+    POST('/rename', {oldname:oldname, newname:newname}, function(res) {
+        console.log("response from rename is ",res);
+        if(res.status == 'error') {
+            appendConsoleResponse(res.output);
+        } else {
+            fetchSketches(populateSketches);
+        }
+    })
+});
+
+$("#edit-sketches-button").click(function(e) {
+    e.preventDefault();
+    $("#sketch-picker .edit-button").toggleClass('hidden');
+    $("#sketch-picker .delete-button").toggleClass('hidden');
+})
+
+$("#save-sketch-button").click(function(e) {
+    e.preventDefault();
+    console.log('current sketch is ',STATE);
+    STATE.sketch.files[0].content = editor.getValue();
+    console.log("code = ",STATE.sketch.files[0].content);
+    appendConsole("saving " + STATE.sketch.name);
+    POST('/save',{
+        code: STATE.sketch.files[0].content,
+        name: STATE.sketch.name,
+    }, function(resp) {
+        appendConsoleResponse(resp.status);
+        if(resp.status == 'error') {
+            appendConsoleResponse(resp.output);
+        }
+    });
+
+})
+
+$("#open-serial-button").click(function(e) {
+    e.preventDefault();
+    toggleSerialConsole();
+});
+
+$("#clear-debug-pane").click(function(e) {
+    e.preventDefault();
+    $("#console").empty();
+});
+
+$("#clear-serial-pane").click(function(e) {
+    e.preventDefault();
+    $("#serial").empty();
+});
+
+
+var templ = $("#serial-selection-menu-template").text();
+$("#serial-selection-menu").empty().append(Mustache.render(templ,
+    [300,1200,2400,4800,9600,14400,19200,28800,38400,57600,115200]));
+$("#serial-selection-menu a").click(function(e) {
+        e.preventDefault();
+        setRate($(this).attr('data-speed'));
+    })
+
+
+
+var wsurl = "ws:" + location.hostname + ":4203";
+var monitor = new WebSocket(wsurl);
+monitor.onopen = function(e) {
+    console.log("opened the websocket for ",wsurl);
+}
+monitor.onclose = function(e) {
+    console.log("closed websocket");
+}
+monitor.onerror = function(e) {
+    console.log("error in websocket");
+}
+monitor.onmessage = function(e) {
+    var event = JSON.parse(e.data);
+    if(event.type == 'serial') {
+        $("#serial").text($("#serial").text()+event.data);
+        var objDiv = document.getElementById("serial");
+        objDiv.scrollTop = objDiv.scrollHeight;
+    } else {
+        $("#console").append('<p class="response">'+event.message+'</p>');
+        var objDiv = document.getElementById("console");
+        objDiv.scrollTop = objDiv.scrollHeight;
+
+    }
+}
+
+
+      });
+    </script>
+  </body>
+
+
+
+<script id='board-selector-template' type='text/mustache'>
+  {{#.}}
+    <li><a href='#' data-id='{{id}}'><b>{{name}}</b> : {{mcu}}</a></li>
+  {{/.}}
+</script>
+
+<script id='port-selector-template' type='text/mustache'>
+    {{#.}}
+      <li><a href='#' data-name='{{comName}}'><b>{{comName}}</b> : {{comName}}</a></li>
+    {{/.}}
+</script>
+
+<script id='docs-template' type='text/mustache'>
+    <h3>{{name}}</h3>
+    <p><b>Platforms</b> {{#platforms}} {{.}} {{/platforms}}
+    {{#docs}}
+    <div>
+      <h4>{{type}}:{{name}}</h4>
+
+      <h5>constructors</h5>
+      {{#constructors}}
+      <h6>{{.}}</h6>
+      {{/constructors}}
+
+      <h5>methods</h5>
+      {{#methods}}
+      <h6>{{.}}</h6>
+      {{/methods}}
+
+    </div>
+    {{/docs}}
+</script>
+
+<script id='sketch-template' type='text/mustache'>
+    <div class='list-group'>
+        {{#.}}
+            <a href='#' class='list-group-item' data-name="{{.}}">{{.}}
+                <button data-name='{{.}}' class='btn btn-default btn-xs pull-right hidden delete-button'
+                    ><span class='glyphicon glyphicon-remove'></span></button>
+                <button data-name='{{.}}' class='btn btn-default btn-xs pull-right hidden edit-button'
+                    ><span class='glyphicon glyphicon-pencil'></span></button>
+            </a>
+        {{/.}}
+    </div>
+</script>
+
+<script id='board-info-template' type='text/mustache'>
+    <h3>{{name}}</h3>
+
+    <dl class='dl-horizontal'>
+        <dt>vendor</dt><dd>{{vendor}}</dd>
+        <dt>homepage</dt><dd><a href='{{homepage}}' target='_blank'>homepage</a></dd>
+        <dt>platform</dt><dd>{{build.core}}</dd>
+        <dt>mcu</dt><dd>{{build.mcu}}</dd>
+        <dt>operating voltage</dt><dd>{{info.power.operating}}V</dd>
+        <dt>input voltage</dt><dd>{{info.power.inputmin}}V - {{info.power.inputmax}}V</dd>
+        <dt>flash memory</dt><dd>{{info.memory.flash}} KB</dd>
+        <dt>sram</dt><dd>{{info.memory.sram}} KB</dd>
+        <dt>eeprom</dt><dd>{{info.memory.eeprom}} KB</dd>
+        <dt>digital pins</dt><dd>{{info.io.digital}}</dd>
+        <dt>analog pins</dt><dd>{{info.io.analogin}}</dd>
+        <dt>pwm pins</dt><dd>{{info.io.pwm}}</dd>
+        <dt>clock speed</dt><dd>{{info.clockspeed}} MHz</dd>
+    </dl>
+
+    <!--
+    <h3>PINS</h3>
+    <dl class='dl-horizontal'>
+    {{#pins}}
+      <dt>{{name}}</dt>
+      <dd>{{desc}}, {{type}} <b>{{altname}} {{alttype}}</b></dd>
+    {{/pins}}
+    -->
+</script>
+
+<script id='sketch-info-template' type='text/mustache'>
+    <h5>libraries</h5>
+    <ul class='libraries'>
+        {{#libraries}}
+            <li><a href='#' data-id='{{.}}'>{{.}}</a></li>
+        {{/libraries}}
+    </ul>
+</script>
+
+<script id='library-doc-template' type='text/mustache'>
+    {{#classes}}
+        class <b>{{name}}</b>
+        <h5>constants</h5>
+        <ul>
+        {{#constants}}
+            <li>{{name}}::{{.}}</li>
+        {{/constants}}
+        </ul>
+        <h5>constructors</h5>
+        {{#constructors}}
+            <p><b>{{name}}</b> ( <i>{{args}}</i> )</p>
+        {{/constructors}}
+        <h5>methods</h5>
+        {{#methods}}
+            <p>{{ret}} <b>{{name}}</b> ( <i>{{args}}</i>) </p>
+        {{/methods}}
+    {{/classes}}
+</script>
+
+<script id='library-template' type='text/mustache'>
+    {{#.}}
+        <a href="#" class="list-group-item" data-id={{id}} data-name={{name}}>
+          <h4 class="list-group-item-heading">{{name}}</h4>
+          <p class="list-group-item-text">{{description}}</p>
+        </a>
+    {{/.}}
+</script>
+
+
+<script id='serial-selection-menu-template' type='text/mustache'>
+    {{#.}}
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#" data-speed='{{.}}'>{{.}}</a></li>
+    {{/.}}
+</script>
+
+</html>
