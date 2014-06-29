@@ -1,0 +1,118 @@
+#editor {
+            font-family: 'Source Code Pro', monospace;
+        }
+        ul.tabs {
+            padding:0;
+            margin:0;
+            border: 0px solid red;
+        }
+        ul.tabs li {
+            border: 0px solid gray;
+            border-radius: 4px;
+            display: inline;
+            padding:0.3em 0.4em;
+            margin:0;
+            background-color: #999;
+            color: black;
+        }
+        ul.tabs li.active {
+            background-color: #5bc0de ;
+        }
+        ul.tabs li a {
+            color: black;
+        }
+
+        .tabpane {
+            border: 0px solid red;
+            display:none;
+        }
+        .tabpane.active {
+            display: block;
+        }
+
+        #serial {
+            border: 0px solid black;
+            white-space: pre;
+            font-family: 'Source Code Pro', monospace;
+        }
+
+
+
+
+    html, body {
+        height: 100%;
+        padding:0;
+        margin:0;
+    }
+    .vfill {
+        height: 100%;
+        padding:0;
+    }
+
+    .scrollpane {
+        position: fixed;
+        background-color: #f0f0f0;
+        padding: 0;
+        margin: 0;
+    }
+    .header {
+        background-color: #e0e0e0;
+        margin: 0;
+        padding: 10px;
+    }
+
+    #sketch-info {
+        left: 0;
+        top: 50px;
+        height: 270px;
+        width: 300px;
+    }
+    #info-sidebar {
+        right: 0;
+        width: 400px;
+        top: 50px;
+        bottom: 0px;
+        border-radius: 0px;
+    }
+    #serial {
+        overflow: auto;
+        margin:0;
+        padding:5px;
+    }
+    #main {
+        top: 50px;
+        right: 400px;
+        left: 300px;
+        bottom: 0px;
+        width: auto;
+        border:1px solid #ddd;
+    }
+    #editor {
+        width: 100%;
+        height: 100%;
+    }
+    #filebrowser {
+        top: 320px;
+        left: 0px;
+        bottom: 0px;
+        width: 300px;
+    }
+
+    #tree {
+        top:40px;
+        bottom:0px;
+        left:0;
+        right:0;
+        position: absolute;
+        overflow: auto;
+        border-radius: 0px;
+    }
+
+    .nav-tabs li a{
+        border-radius: 0px;
+    }
+
+
+
+
+.ace_editor { height: 200px; }

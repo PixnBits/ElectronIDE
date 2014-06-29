@@ -6,7 +6,7 @@ var http   = require('http');
 var sp = require('serialport');
 var compile = require('./compile');
 var uploader = require('./uploader');
-var websocket = require('nodejs-websocket');
+var socketIo = require('socket.io');
 var path = require('path');
 
 var settings = require('./settings.js');
@@ -42,19 +42,7 @@ app.use(multer({dest:'./uploads'}));
 app.use(express.static(__dirname+'/public'));
 
 app.get('/ports',function(req,res) {
-    sp.list(function(err,list) {
-
-        // format the data (workaround serialport issue on Win (&*nix?))
-        list.forEach(function(port) {
-            if(port.pnpId){
-                var data = /^USB\\VID_([a-fA-F0-9]{4})\&PID_([a-fA-F0-9]{4})/.exec(port.pnpId);
-                if(data){
-                    port.vendorId = port.vendorId || '0x'+data[1];
-                    port.productId = port.productId || '0x'+data[2];
-                }
-            }
-        });
-
+    serial.list(function(ports){
         res.send(JSON.stringify(list));
         res.end();
     });
@@ -319,50 +307,19 @@ var server = app.listen(54329,function() {
 });
 
 
-var wss = websocket.createServer(function(conn) {
-    console.log('web socket connected');
-    wslist.push(conn);
-    conn.on('text',function(str) {
-        console.log("got a request", str);
-        var parsedData;
-        try{
-            parsedData = JSON.parse(str);
-        }catch(e){}
+// support websockets on the http server
+var websockets = socketIo(server);
 
-        console.dir(parsedData);
+websockets.on('connection', function(socket){
+    console.log('connection');
 
-        if(parsedData){
-            // command/request name
-            switch(parsedData.name){
-                case 'boards':
-                    conn.sendText(JSON.stringify({name:'boards', data:BOARDS}));
-                    break;
-                case 'ports':
-                    sp.list(function(err,list) {
-                        // format the data (workaround serialport issue on Win (&*nix?))
-                        list.forEach(function(port) {
-                            if(port.pnpId){
-                                var data = /^USB\\VID_([a-fA-F0-9]{4})\&PID_([a-fA-F0-9]{4})/.exec(port.pnpId);
-                                if(data){
-                                    port.vendorId = port.vendorId || '0x'+data[1];
-                                    port.productId = port.productId || '0x'+data[2];
-                                }
-                            }
-                        });
-                        conn.sendText(JSON.stringify({name:'ports', data:list}));
-                    });
+    socket.on('boards', function(){
+        socket.emit('boards', BOARDS);
+    });
 
-                    break;
-                default:
-                    conn.sendText("huh??");
-                    break;
-            }
-        }
+    socket.on('ports', function(){
+        serial.list(function(ports){
+            socket.emit('ports', ports);
+        });
     });
-    conn.on('error',function(err){
-        console.log('websocket got an error',err);
-    });
-    conn.on('close',function(code,reason) {
-        console.log("websocket closed",code,reason);
-    });
-}).listen(4203);
+});

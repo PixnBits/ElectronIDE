@@ -1,4 +1,5 @@
-var SerialPort = require('serialport').SerialPort;
+var serialportModule = require('serialport'),
+    SerialPort = serialportModule.SerialPort;
 
 var sp = null;
 exports.open = function(port, rate, cb) {
@@ -28,5 +29,21 @@ exports.close = function(port, cb) {
     sp.close(function(err) {
         console.log("the port is really closed now");
         if(cb) cb();
+    });
+}
+
+exports.list = function(callback){
+    serialportModule.list(function(err,list){
+        // format the data (workaround serialport issue on Win (&*nix?))
+        list.forEach(function(port){
+            if(port.pnpId){
+                var data = /^USB\\VID_([a-fA-F0-9]{4})\&PID_([a-fA-F0-9]{4})/.exec(port.pnpId);
+                if(data){
+                    port.vendorId = port.vendorId || '0x'+data[1];
+                    port.productId = port.productId || '0x'+data[2];
+                }
+            }
+        });
+        callback(list);
     });
 }
