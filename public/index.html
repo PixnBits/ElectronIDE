@@ -36,18 +36,21 @@ using font awesome
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <link href='bower_components/angular-bootstrap-nav-tree/dist/abn_tree.css' rel='stylesheet' type='text/css'>
+
+
     <link href='styles/nextgen.css' rel='stylesheet' type='text/css'>
 
   </head>
   <body ng-controller="MainController">
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="jquery.js"></script>
-<script src="mustache.js"></script>
+<!-- <script src="mustache.js"></script> -->
 <!-- <script src='./ace-builds-master/src-noconflict/ace.js' type='text/javascript' charset='utf-8'></script> -->
 <!-- <script src="./ace-builds-master/src-noconflict/ext-language_tools.js"></script> -->
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <!-- <script src="bootstrap/js/bootstrap.min.js"></script> -->
-<script src='treeview/src/js/bootstrap-treeview.js'></script>
+<!-- <script src='treeview/src/js/bootstrap-treeview.js'></script> -->
 
 
 
@@ -106,21 +109,24 @@ using font awesome
     <button class='btn btn-default btn-xs' data-toggle='modal' data-target='#add-library-modal'>Add Library</button>
     <button class='btn btn-default btn-xs'>Remove</button>
 </div>
-<div class='col-md-12 scrollpane' id='filebrowser'>
+<div class='col-md-12 scrollpane' id='filebrowser' ng-controller="SketchController">
     <h4 class='header'>Sketches</h4>
-    <div id='tree'></div>
+    <abn-tree
+      tree-data="sketches"
+      on-select="treeFocus(branch)"
+    ></abn-tree>
 </div>
 
 
 <div class="scrollpane" id="main" ng-controller="FileEditorController">
   <ul class="nav nav-tabs" role="tablist" id="myTab">
-    <li ng-repeat="file in files">
+    <li ng-repeat="file in openFiles">
       <a href="#file-{{$index}}" role="tab" data-toggle="tab">{{file.name}}</a>
     </li>
   </ul>
 
   <div class="tab-content">
-    <div ng-repeat="file in files" class="tab-pane" id="file-{{$index}}">
+    <div ng-repeat="file in openFiles" class="tab-pane" id="file-{{$index}}">
       <div ui-ace ng-model="file.contents">stuff</div>
     </div>
   </div>
@@ -228,12 +234,13 @@ Temp: 45C
 <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <script src="bower_components/ace-builds/src-min-noconflict/ace.js"></script>
 <script src="bower_components/ace-builds/src-min-noconflict/mode-c_cpp.js"></script>
-<script src="bower_components/angular/angular.min.js"></script>
+<script src="bower_components/angular/angular.js"></script>
 <script src="bower_components/angular-ui-ace/ui-ace.js"></script>
-<script src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
+<script src="bower_components/angular-bootstrap-nav-tree/dist/abn_tree_directive.js"></script>
 <script src="scripts/electron.js"></script>
 
 <script type='text/javascript'>
+  /*
     $(document).ready(function() {
         $("#compile-code").click(function(e) {
             e.preventDefault();
@@ -352,6 +359,7 @@ Temp: 45C
             levels: 1,
             });
     });
+  //*/
 </script>
 
 </body>

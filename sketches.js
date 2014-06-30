@@ -41,13 +41,30 @@ exports.renameSketch = function(oldname, newname, cb) {
     });
 }
 
+
+//TODO use fs.watch (http://nodejs.org/api/all.html#all_fs_watch_filename_options_listener) to notice when the user changes files/folders out of band (external editor)
+
+function listChildren(path){
+    var list = fs
+                .readdirSync(path)
+                .map(function(name){
+                    var childPath = path+'/'+name;
+                    var stat = fs.statSync(childPath);
+                    var data = { label: name };
+
+                    if(stat.isDirectory()){
+                        //FIXME detect infinite recursion (i.e.:symlink)
+                        data.children = listChildren(childPath)
+                    }
+
+                    return data;
+                });
+
+    return list;
+}
 exports.listSketches = function(cb) {
-    var list = fs.readdirSync(plat.getUserSketchesDir());
-    list = list.filter(function(file) {
-        if(file.toLowerCase() == 'libraries') return false;
-        if(file.toLowerCase() == '.ds_store') return false;
-        return true;
-    });
+    var list = listChildren(plat.getUserSketchesDir());
+
     if(cb) cb(list);
 }
 

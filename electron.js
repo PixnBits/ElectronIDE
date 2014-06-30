@@ -234,8 +234,10 @@ app.post('/save',function(req,res) {
     });
 });
 
-app.get('/sketch/:name',function(req,res) {
-    sketches.getSketch(req.params.name, function(sketch) {
+//app.get('/sketch/:name',function(req,res) {
+app.get(/^\/sketch\/(.+)/,function(req,res) {
+    console.log('req.params', req.params);
+    sketches.getSketch(req.params[0], function(sketch) {
         res.send(sketch);
         res.end();
     });
@@ -322,4 +324,17 @@ websockets.on('connection', function(socket){
             socket.emit('ports', ports);
         });
     });
+
+    // sketches
+    socket.on('sketches', function(){
+        sketches.listSketches(function(list){
+            socket.emit('sketches', list);
+        });
+    });
+    /*
+    socket.on('sketches:get', function(name){
+        sketches.getSketch(name, function(contents){
+            socket.emit('sketch', {name:name, contents:contents});
+        });
+    });//*/
 });
