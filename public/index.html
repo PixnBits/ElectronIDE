@@ -25,10 +25,6 @@ using font awesome
     <!-- source code font -->
     <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:200,300,400,500,600,700,900' rel='stylesheet' type='text/css'>
 
-
-    <!-- for the tree view -->
-    <link href='treeview/src/css/bootstrap-treeview.css' rel='stylesheet' type='text/css'>
-
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -127,7 +123,7 @@ using font awesome
 
   <div class="tab-content">
     <div ng-repeat="file in openFiles" class="tab-pane" id="file-{{$index}}">
-      <div ui-ace ng-model="file.contents">stuff</div>
+      <div ui-ace="{mode:'c_cpp', theme:'tomorrow'}" ng-model="file.contents">stuff</div>
     </div>
   </div>
 </div>
@@ -137,21 +133,18 @@ using font awesome
 <div id='info-sidebar' class='panel panel-default scrollpane'>
 
     <ul class="nav nav-pills panel-heading" role="tablist">
-      <!-- TODO: ngRepeat consoles (support multiple serial ports open at once) -->
-      <li class='active'><a href='#serial' role="tab" data-toggle="tab">console</a></li>
+      <li ng-repeat="(portName, portData) in openedPorts">
+        <a href='#serial-{{portName}}' role="tab" data-toggle="tab">
+          console({{portName}})
+          <span style="color:red" ng-click="closeSerialPort(portName)">×</span>
+        </a>
+      </li>
       <li><a href='#board-info' role="tab" data-toggle="tab">board info</a></li>
     </ul>
 
     <div class="tab-content">
 
-      <div id='serial' class='tab-pane active vfill'>reporting...
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-      </div>
+      <div ng-repeat="(portName, portData) in openedPorts" id='serial-{{portName}}' class='tab-pane active vfill serial-out'>{{portData.log.join('')}}</div>
 
       <div id='board-info' class='tab-pane'>
         <span ng-show="!!activeBoard">
@@ -238,9 +231,19 @@ Temp: 45C
 </div><!-- /.modal -->
 
 <script src="/socket.io/socket.io.js"></script>
+
+<!-- Drag 'n' Drop panels (save to settings) -->
+<!-- <script src="bower_components/jquery-ui/ui/core.js"></script>
+<script src="bower_components/jquery-ui/ui/mouse.js"></script>
+<script src="bower_components/jquery-ui/ui/widget.js"></script>
+<script src="bower_components/jquery-ui/ui/draggable.js"></script> -->
+
 <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
 <script src="bower_components/ace-builds/src-min-noconflict/ace.js"></script>
 <script src="bower_components/ace-builds/src-min-noconflict/mode-c_cpp.js"></script>
+<script src="bower_components/ace-builds/src-min-noconflict/theme-tomorrow.js"></script>
+
 <script src="bower_components/angular/angular.js"></script>
 <script src="bower_components/angular-ui-ace/ui-ace.js"></script>
 <script src="bower_components/angular-bootstrap-nav-tree/dist/abn_tree_directive.js"></script>
@@ -281,90 +284,6 @@ Temp: 45C
         editor.getSession().setMode('ace/mode/c_cpp');
         editor.getSession().setUseWrapMode(true);
 
-
-        //setup the file browser for sketches
-        function getTree() {
-            return [
-                {
-                    text:'ASCIITable',
-                    nodes: [
-                        {
-                            text:'ASCIITable.ino',
-                            icon: 'fa fa-file-code-o',
-                            tags:['sketch'],
-                        },
-                    ],
-                },
-                {
-                    text:'DrawBot2',
-                    nodes: [
-                        {
-                            text:'DrawBot2.ino',
-                            icon: 'fa fa-file-code-o',
-                            tags:['sketch'],
-                        },
-                    ],
-                },
-                {
-                    text:'SmartWatchDemo',
-                    nodes: [
-                        { text: 'blemodule.cpp' },
-                        { text: 'blemodule.h' },
-                        { text: 'EEPROMAnything.h' },
-                        { text: 'ledmodule.cpp' },
-                        { text: 'ledmodule.h' },
-                        { text: 'userled.cpp' },
-                        { text: 'userled.h' },
-                        { text: 'SmartWatchDemo.ino', tags:['sketch']},
-                    ]
-                },
-
-                {
-                    text:'SensorTests',
-                    nodes: [
-                        {
-                            text:'PressureTest1',
-                            nodes: [
-                                {
-                                    text:'PressureTest1.ino',
-                                    icon: 'fa fa-file-code-o',
-                                    tags:['sketch'],
-                                }
-                            ]
-                        },
-                        {
-                            text:'TempMon',
-                            nodes: [
-                                {
-                                    text:'TempMon.ino',
-                                    icon: 'fa fa-file-code-o',
-                                    tags:['sketch'],
-                                }
-                            ]
-                        },
-                        {
-                            text:'Lightastic',
-                            nodes: [
-                                {
-                                    text:'Lightastic.ino',
-                                    icon: 'fa fa-file-code-o',
-                                    tags:['sketch'],
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
-        $("#tree").treeview({
-            data: getTree(),
-            collapseIcon: 'fa fa-caret-down fa-2x',
-            expandIcon: 'fa fa-caret-right fa-2x',
-            nodeIcon: null,
-            showTags: true,
-            showBorder: false,
-            levels: 1,
-            });
     });
   //*/
 </script>

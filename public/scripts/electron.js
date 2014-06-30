@@ -7,7 +7,8 @@ angular.module('electron', [
 
 		var localBoards = [],
 			localPorts = [],
-			localSketches = [];
+			localSketches = [],
+			openedPorts = {};
 
 		socket.on('boards', function(serverBoards){
 			$rootScope.$apply(function(){
@@ -22,6 +23,22 @@ angular.module('electron', [
 		socket.on('sketches', function(serverSketches){
 			$rootScope.$apply(function(){
 				[].splice.apply(localSketches, [0,Infinity].concat(serverSketches))
+			});
+		});
+
+		socket.on('portData', function(dataIn){
+			$rootScope.$apply(function(){
+				//TODO also set `activePort`?
+				var port = openedPorts[dataIn.port];
+				if(!port){
+					port = openedPorts[dataIn.port] = {log:[]};
+				}
+				port.log.push(dataIn.data);
+
+				//TODO use setting of max log length
+				if(port.log.length > 50){
+					port.log.splice(0,port.log.length-50);
+				}
 			});
 		});
 
@@ -40,6 +57,42 @@ angular.module('electron', [
 			sketches : localSketches,
 			getSketch : function(name){
 				return $http.get('/sketch/'+name);
+			},
+			openPort: function(port, rate){
+				if(!(port && rate) || openedPorts[port.comName]){
+					// already open
+					//TODO should return a promise instead?
+					return false;
+				}
+				return $http.post(
+					'/serial/open',
+					JSON.stringify({port: port.comName, rate:rate}),
+					{
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					}
+				)
+					.success(function(data, status, headers, config){
+						openedPorts[port.comName] = {
+							log: []
+						};
+					});
+			},
+			openedPorts: openedPorts,
+			closePort : function(portName){
+				return $http.post(
+					'/serial/close',
+					JSON.stringify({port: portName}),
+					{
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					}
+				)
+					.success(function(data, status, headers, config){
+						delete openedPorts[portName];
+					});
 			}
 		};
 	})
@@ -63,10 +116,29 @@ angular.module('electron', [
 			if(boardMatched){
 				$scope.setActiveBoard(boardMatched);
 			}
+
 		};
 
 		$scope.setActiveBoard = function(board){
 			$scope.activeBoard = board;
+			maybeOpenPort();
+		};
+
+		function maybeOpenPort(){
+			console.log('maybeOpenPort??');
+			ServerData.openPort($scope.activePort, 9600)
+				.success(function(data, status, headers, config){
+					console.log('open port?', status, data);
+				});
+		}
+
+		$scope.openedPorts = ServerData.openedPorts;
+
+		$scope.closeSerialPort = function(portName){
+			ServerData.closePort(portName)
+				.success(function(data, status, headers, config){
+					console.log('closed port?', status, data);
+				});
 		};
 	})
 	.controller('SketchController', function($scope, $rootScope, ServerData){

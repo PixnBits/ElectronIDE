@@ -30,7 +30,7 @@
             display: block;
         }
 
-        #serial {
+        .serial-out {
             border: 0px solid black;
             white-space: pre;
             font-family: 'Source Code Pro', monospace;
@@ -74,7 +74,7 @@
         bottom: 0px;
         border-radius: 0px;
     }
-    #serial {
+    .serial-out {
         overflow: auto;
         margin:0;
         padding:5px;

@@ -1,5 +1,6 @@
 var fs = require('fs');
 var express = require('express');
+var bodyParser = require('body-parser');
 var multer = require('multer');
 var moment = require('moment');
 var http   = require('http');
@@ -25,12 +26,8 @@ var OPTIONS = {
 console.log('settings',settings);
 console.log("options",OPTIONS);
 
-var wslist = [];
 function publishEvent(evt) {
-    wslist.forEach(function(conn) {
-        console.log('sending event',evt);
-        conn.sendText(JSON.stringify(evt));
-    });
+    websockets.emit('event', evt);
 }
 
 
@@ -40,6 +37,9 @@ app.use(multer({dest:'./uploads'}));
 
 //public is the dir for static files
 app.use(express.static(__dirname+'/public'));
+
+// parse application/json
+app.use(bodyParser.json())
 
 app.get('/ports',function(req,res) {
     serial.list(function(ports){
@@ -258,12 +258,11 @@ var SERIAL = {
     callback: function(data) {
         if(data) {
             var msg = {
+                port: SERIAL.port,
                 type:'serial',
                 data:data.toString(),
             };
-            wslist.forEach(function(conn) {
-                conn.sendText(JSON.stringify(msg));
-            });
+            websockets.emit('portData', msg);
         } else {
             console.log("ERR: callback called with no data!")
         }
