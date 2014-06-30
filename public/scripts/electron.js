@@ -93,6 +93,27 @@ angular.module('electron', [
 					.success(function(data, status, headers, config){
 						delete openedPorts[portName];
 					});
+			},
+			compile: function(board, sketch, code){
+				return $http.post(
+					'/compile',
+					JSON.stringify({
+						board: board.name, // name? id?
+						sketch: sketch,
+						code: code
+					}),
+					{
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					}
+				)
+					.success(function(data, status, headers, config){
+						console.log('compiling?', status, data);
+					})
+					.error(function(data, status, headers, config){
+						console.log('error compiling...', status, data);
+					});
 			}
 		};
 	})
@@ -109,7 +130,10 @@ angular.module('electron', [
 			// attempt to determine which board is connected at this port
 			var boardMatched = ServerData.boards.filter(function(board){
 				if(board && board.build && board.build.pid){
-					return board.build.pid === port.productId && board.build.vid === port.vendorId;
+					if('object' === typeof board.build.pid){
+						return board.build.vid === port.vendorId && ~board.build.pid.indexOf(port.productId);
+					}
+					return board.build.vid === port.vendorId && board.build.pid === port.productId;
 				}
 			})[0];
 
@@ -126,6 +150,10 @@ angular.module('electron', [
 
 		function maybeOpenPort(){
 			console.log('maybeOpenPort??');
+			if(!$scope.activePort || !$scope.activeBoard){
+				return;
+			}
+
 			ServerData.openPort($scope.activePort, 9600)
 				.success(function(data, status, headers, config){
 					console.log('open port?', status, data);
@@ -140,6 +168,11 @@ angular.module('electron', [
 					console.log('closed port?', status, data);
 				});
 		};
+
+		// $scope.compile = function(){
+		// 	console.log('start compile...');
+		// 	ServerData.compile($scope.activeBoard, sketch??, code??already on disk???);
+		// };
 	})
 	.controller('SketchController', function($scope, $rootScope, ServerData){
 		$scope.sketches = ServerData.sketches;
