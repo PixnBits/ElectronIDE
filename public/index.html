@@ -135,39 +135,46 @@ using font awesome
 
 
 <div id='info-sidebar' class='panel panel-default scrollpane'>
-    <div class='panel-heading'>
-        <ul class='tabs'>
-            <li class='active'><a href='#serial'>console</a></li>
-            <li><a href='#board-info'>board info</a></li>
-        </ul>
-    </div>
-    <div id='serial' class='tabpane active vfill'>reporting...
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-    </div>
 
-    <div id='board-info' class='tabpane'>
-        <h4>{{activeBoard.name}}</h4>
-        <dl class='dl-horizontal'>
-            <dt>CPU</dt><dd>{{activeBoard.build.mcu}}</dd>
-            <dt>Operating Voltage</dt><dd>{{activeBoard.info.power.operating}}V</dd>
-            <dt>Flash Memory</dt><dd>{{activeBoard.info.memory.flash}} KB</dd>
-            <dt>SRAM</dt> <dd>{{activeBoard.info.memory.sram}} KB</dd>
+    <ul class="nav nav-pills panel-heading" role="tablist">
+      <!-- TODO: ngRepeat consoles (support multiple serial ports open at once) -->
+      <li class='active'><a href='#serial' role="tab" data-toggle="tab">console</a></li>
+      <li><a href='#board-info' role="tab" data-toggle="tab">board info</a></li>
+    </ul>
 
-            <dt ng-repeat-start="(prop, val) in activeBoard.info">{{prop}}</dt>
-            <dd ng-repeat-end>{{val}}</dd>
-        </dl>
-        <h4>PINS</h4>
-        <dl class='dl-horizontal'>
-            <dt>D0</dt><dd>Digital 1</dd>
-            <dt>A0</dt><dd>Analog 0, D14</dd>
-            <dt>A1</dt><dd>Analog 1, D15</dd>
-        </dl>
-        <pre>{{activeBoard|json:pretty}}</pre>
+    <div class="tab-content">
+
+      <div id='serial' class='tab-pane active vfill'>reporting...
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+      </div>
+
+      <div id='board-info' class='tab-pane'>
+        <span ng-show="!!activeBoard">
+          <h4>{{activeBoard.name}}</h4>
+          <dl class='dl-horizontal'>
+              <dt>CPU</dt><dd>{{activeBoard.build.mcu}}</dd>
+              <dt>Operating Voltage</dt><dd>{{activeBoard.info.power.operating}}V</dd>
+              <dt>Flash Memory</dt><dd>{{activeBoard.info.memory.flash}} KB</dd>
+              <dt>SRAM</dt> <dd>{{activeBoard.info.memory.sram}} KB</dd>
+
+              <dt ng-repeat-start="(prop, val) in activeBoard.info">{{prop}}</dt>
+              <dd ng-repeat-end>{{val}}</dd>
+          </dl>
+          <h4>PINS</h4>
+          <dl class='dl-horizontal'>
+              <dt>D0</dt><dd>Digital 1</dd>
+              <dt>A0</dt><dd>Analog 0, D14</dd>
+              <dt>A1</dt><dd>Analog 1, D15</dd>
+          </dl>
+          <pre>{{activeBoard|json:pretty}}</pre>
+        </span>
+        <span ng-hide="!!activeBoard">Please select a board from the dropdown above.</span>
+      </div>
 
     </div>
 </div>
