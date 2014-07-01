@@ -173,7 +173,7 @@ angular.module('electron', [
 			console.log('start compile...');
 			var activeFile = FileEditorHelper.getActiveFile();
 			if(activeFile){
-				ServerData.compile($scope.activeBoard, activeFile.path, activeFile.contents);
+				ServerData.compile($scope.activeBoard, activeFile.name.replace(/\.ino$/,''), activeFile.contents);
 			}
 		};
 	})
