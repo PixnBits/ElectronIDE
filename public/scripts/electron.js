@@ -117,7 +117,7 @@ angular.module('electron', [
 			}
 		};
 	})
-	.controller('MainController', function($scope, ServerData){
+	.controller('MainController', function($scope, ServerData, FileEditorHelper){
 		//TODO move to another controller?
 		$scope.boards = ServerData.boards;
 		$scope.ports = ServerData.ports;
@@ -169,10 +169,13 @@ angular.module('electron', [
 				});
 		};
 
-		// $scope.compile = function(){
-		// 	console.log('start compile...');
-		// 	ServerData.compile($scope.activeBoard, sketch??, code??already on disk???);
-		// };
+		$scope.compile = function(){
+			console.log('start compile...');
+			var activeFile = FileEditorHelper.getActiveFile();
+			if(activeFile){
+				ServerData.compile($scope.activeBoard, activeFile.path, activeFile.contents);
+			}
+		};
 	})
 	.controller('SketchController', function($scope, $rootScope, ServerData){
 		$scope.sketches = ServerData.sketches;
@@ -217,7 +220,23 @@ angular.module('electron', [
 			$rootScope.$broadcast('sketch:open', path);
 		};
 	})
-	.controller('FileEditorController', function($scope, ServerData){
+	.factory('FileEditorHelper', function(){
+		var activeFile;
+
+		return {
+			setActiveFile: function(file){
+				if(file){
+					activeFile = file;
+				}
+
+				return activeFile;
+			},
+			getActiveFile: function(){
+				return activeFile;
+			}
+		};
+	})
+	.controller('FileEditorController', function($scope, ServerData, FileEditorHelper){
 		$scope.openFiles = [
 			{
 				name: 'Your Sketchy.ino',
@@ -230,6 +249,8 @@ angular.module('electron', [
 				contents: 'Serial.begin(9600);'
 			}
 		];
+
+		$scope.setActiveFile = FileEditorHelper.setActiveFile;
 
 
 		$scope.$on('sketch:open', function($event, path){
@@ -244,5 +265,6 @@ angular.module('electron', [
 					});
 				});
 		});
+
 	})
 ;

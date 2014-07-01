@@ -117,7 +117,7 @@ using font awesome
 <div class="scrollpane" id="main" ng-controller="FileEditorController">
   <ul class="nav nav-tabs" role="tablist" id="myTab">
     <li ng-repeat="file in openFiles">
-      <a href="#file-{{$index}}" role="tab" data-toggle="tab">{{file.name}}</a>
+      <a href="#file-{{$index}}" role="tab" data-toggle="tab" ng-click="setActiveFile(file)">{{file.name}}</a>
     </li>
   </ul>
 
